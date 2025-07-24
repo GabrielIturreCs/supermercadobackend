@@ -33,7 +33,7 @@ const auditoriasRoutes = require("./src/routes/auditorias")
 const errorHandler = require("./src/middleware/errorHandler")
 const notFound = require("./src/middleware/notFound")
 
-const path = require("path");
+// const path = require("path");
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -60,13 +60,8 @@ app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true, limit: "10mb" }))
 app.use(mongoSanitize())
 
-// Servir archivos estáticos del frontend Angular
-app.use(express.static(path.join(__dirname, "public")));
 
-// Redirigir todas las rutas no API al index.html del frontend (Angular SPA)
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+// (El backend solo responde a rutas /api/*, no sirve archivos estáticos de frontend)
 
 // Health check
 app.get("/health", (req, res) => {
