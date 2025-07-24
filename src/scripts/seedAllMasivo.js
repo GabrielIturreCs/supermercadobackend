@@ -6,7 +6,7 @@ const Producto = require('../models/Producto');
 const Usuario = require('../models/Usuario');
 const Venta = require('../models/Venta');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/supermeercado';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://<usuario>:<password>@ac-jotlwe9-shard-00-00.2vz7f6m.mongodb.net/supermeercado?retryWrites=true&w=majority';
 
 async function seed() {
   await mongoose.connect(MONGO_URI);

@@ -7,6 +7,7 @@ const compression = require("compression")
 const mongoSanitize = require("express-mongo-sanitize")
 const rateLimit = require("express-rate-limit")
 require("dotenv").config()
+const path = require("path")
 
 // Import routes
 const authRoutes = require("./src/routes/auth")
@@ -50,7 +51,7 @@ app.use(limiter)
 app.use(morgan("combined"))
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:4200",
+    origin: process.env.CORS_ORIGIN || "https://supermercado-knm6.onrender.com",
     credentials: true,
   }),
 )
@@ -66,6 +67,12 @@ app.get("/health", (req, res) => {
     uptime: process.uptime(),
   })
 })
+
+// Servir archivos estáticos del frontend de Angular
+// La ruta debe apuntar a la carpeta de build de tu proyecto de Angular
+const frontendDistPath = path.join(__dirname, "..", "frontend", "dist", "supermeercadoapp", "browser")
+app.use(express.static(frontendDistPath))
+
 
 // Routes
 app.use("/api/auth", authRoutes)
@@ -88,13 +95,19 @@ app.use("/api/sucursales", sucursalesRoutes)
 app.use("/api/balanzas", balanzasRoutes)
 app.use("/api/auditorias", auditoriasRoutes)
 
+// Catch-all para que las rutas de Angular funcionen al recargar la página
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
+
+
 // Error handling middleware
 app.use(notFound)
 app.use(errorHandler)
 
 // Database connection
 
-const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/supermeercado';
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb+srv://<usuario>:<password>@ac-jotlwe9-shard-00-00.2vz7f6m.mongodb.net/supermeercado?retryWrites=true&w=majority';
 if (!MONGO_URI || typeof MONGO_URI !== 'string') {
   console.error('❌ Error: MONGO_URI no está definido o no es un string. Verifica tu archivo .env.');
   process.exit(1);
