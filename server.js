@@ -7,7 +7,6 @@ const compression = require("compression")
 const mongoSanitize = require("express-mongo-sanitize")
 const rateLimit = require("express-rate-limit")
 require("dotenv").config()
-const path = require("path")
 
 // Import routes
 const authRoutes = require("./src/routes/auth")
@@ -68,12 +67,6 @@ app.get("/health", (req, res) => {
   })
 })
 
-// Servir archivos estáticos del frontend de Angular
-// La ruta debe apuntar a la carpeta de build de tu proyecto de Angular
-const frontendDistPath = path.join(__dirname, "..", "frontend", "dist", "supermeercadoapp", "browser")
-app.use(express.static(frontendDistPath))
-
-
 // Routes
 app.use("/api/auth", authRoutes)
 app.use("/api/productos", productosRoutes)
@@ -94,12 +87,6 @@ app.use("/api/ingresos-egresos", ingresosEgresosRoutes)
 app.use("/api/sucursales", sucursalesRoutes)
 app.use("/api/balanzas", balanzasRoutes)
 app.use("/api/auditorias", auditoriasRoutes)
-
-// Catch-all para que las rutas de Angular funcionen al recargar la página
-app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendDistPath, 'index.html'));
-});
-
 
 // Error handling middleware
 app.use(notFound)
