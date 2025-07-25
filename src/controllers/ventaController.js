@@ -5,10 +5,18 @@ exports.getAll = async (req, res) => {
   try {
     const ventas = await Venta.find().populate('vendedor items.producto turno');
     // Agregar campo 'fecha' igual a 'createdAt' para compatibilidad con frontend
-    const ventasConFecha = ventas.map(v => ({
-      ...v.toObject(),
-      fecha: v.createdAt
-    }));
+    let ventasConFecha = ventas.map(v => {
+      const obj = v.toObject();
+      obj.fecha = v.createdAt;
+      // UX: mostrar nombre del vendedor si está poblado
+      if (obj.vendedor && typeof obj.vendedor === 'object') {
+        obj.vendedor = obj.vendedor.nombre || obj.vendedor.username || obj.vendedor.email || '-';
+      }
+      return obj;
+    });
+
+    // UX: ordenar ventas por fecha descendente (más reciente primero)
+    ventasConFecha = ventasConFecha.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
     // Calcular totales
     const hoy = new Date();
