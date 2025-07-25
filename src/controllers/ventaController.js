@@ -9,7 +9,30 @@ exports.getAll = async (req, res) => {
       ...v.toObject(),
       fecha: v.createdAt
     }));
-    res.json(ventasConFecha);
+
+    // Calcular totales
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const totalDia = ventasConFecha
+      .filter(v => new Date(v.fecha) >= hoy)
+      .reduce((sum, v) => sum + (v.total || 0), 0);
+
+    const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const totalMes = ventasConFecha
+      .filter(v => new Date(v.fecha) >= primerDiaMes)
+      .reduce((sum, v) => sum + (v.total || 0), 0);
+
+    const primerDiaAnio = new Date(hoy.getFullYear(), 0, 1);
+    const totalAnio = ventasConFecha
+      .filter(v => new Date(v.fecha) >= primerDiaAnio)
+      .reduce((sum, v) => sum + (v.total || 0), 0);
+
+    res.json({
+      ventas: ventasConFecha,
+      totalDia,
+      totalMes,
+      totalAnio
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
