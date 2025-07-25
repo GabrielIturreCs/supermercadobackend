@@ -30,13 +30,13 @@ exports.create = async (req, res) => {
     console.log('POST /api/ventas - body:', JSON.stringify(req.body, null, 2));
     const venta = new Venta(req.body);
     console.log('Venta instanciada:', venta);
-    // Baja automática de stock
-    if (!venta.detalles || !Array.isArray(venta.detalles)) {
-      console.log('Error: detalles no es array o no existe');
+    // Baja automática de stock usando items
+    if (!venta.items || !Array.isArray(venta.items)) {
+      console.log('Error: items no es array o no existe');
     }
-    for (const d of (venta.detalles || [])) {
-      console.log('Procesando detalle:', d);
-      await Producto.findByIdAndUpdate(d.producto, { $inc: { stock: -d.cantidad } });
+    for (const item of (venta.items || [])) {
+      console.log('Procesando item:', item);
+      await Producto.findByIdAndUpdate(item.producto, { $inc: { 'stock.actual': -item.cantidad } });
     }
     await venta.save();
     console.log('Venta guardada OK:', venta._id);
