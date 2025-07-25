@@ -31,7 +31,11 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const usuario = await Usuario.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true, context: 'query' }
+    );
     if (!usuario) return res.status(404).json({ error: 'No encontrado' });
     res.json(usuario);
   } catch (err) {
