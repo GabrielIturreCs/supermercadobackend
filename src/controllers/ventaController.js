@@ -27,14 +27,22 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    console.log('POST /api/ventas - body:', JSON.stringify(req.body, null, 2));
     const venta = new Venta(req.body);
+    console.log('Venta instanciada:', venta);
     // Baja automática de stock
-    for (const d of venta.detalles) {
+    if (!venta.detalles || !Array.isArray(venta.detalles)) {
+      console.log('Error: detalles no es array o no existe');
+    }
+    for (const d of (venta.detalles || [])) {
+      console.log('Procesando detalle:', d);
       await Producto.findByIdAndUpdate(d.producto, { $inc: { stock: -d.cantidad } });
     }
     await venta.save();
+    console.log('Venta guardada OK:', venta._id);
     res.status(201).json(venta);
   } catch (err) {
+    console.log('Error al crear venta:', err.message, err);
     res.status(400).json({ error: err.message });
   }
 };
