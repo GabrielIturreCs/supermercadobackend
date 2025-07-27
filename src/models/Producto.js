@@ -143,28 +143,6 @@ productoSchema.index({ categoria: 1 })
 productoSchema.index({ activo: 1 })
 productoSchema.index({ "stock.actual": 1 })
 
-// Middleware para actualizar historial de precios
-productoSchema.pre("save", function (next) {
-  if (this.isModified("precios.minorista")) {
-    this.historialPrecios.push({
-      precio: this.precios.minorista,
-      fecha: new Date(),
-    })
-  }
-  next()
-})
 
-// Método para verificar stock bajo
-productoSchema.methods.isStockBajo = function () {
-  return this.stock.actual <= this.stock.minimo
-}
-
-// Método para calcular margen de ganancia
-productoSchema.methods.calcularMargen = function () {
-  if (!this.precios.costo || this.precios.costo === 0) {
-    return 0
-  }
-  return ((this.precios.minorista - this.precios.costo) / this.precios.costo) * 100
-}
 
 module.exports = mongoose.model("Producto", productoSchema)
