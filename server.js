@@ -50,12 +50,34 @@ app.use(helmet())
 app.use(compression())
 app.use(limiter)
 app.use(morgan("combined"))
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "https://supermercado-knm6.onrender.com",
-    credentials: true,
-  }),
-)
+
+// CORS configuration - support both local and production
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    // Define allowed origins based on environment
+    const allowedOrigins = [
+      'http://localhost:4200',        // Angular dev server
+      'http://127.0.0.1:4200',       // Alternative localhost
+      'http://localhost:3000',        // React dev server (if needed)
+      'https://supermercado-knm6.onrender.com', // Production frontend
+      process.env.CORS_ORIGIN        // Environment variable override
+    ].filter(Boolean); // Remove null/undefined values
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true, limit: "10mb" }))
 app.use(mongoSanitize())
@@ -111,10 +133,19 @@ mongoose
   })
   .then(() => {
     console.log("✅ Conectado a MongoDB")
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     // Start server
     app.listen(PORT, () => {
       console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`)
       console.log(`🌍 Entorno: ${process.env.NODE_ENV || "development"}`)
+      
+      if (!isProduction) {
+        console.log(`📡 Backend local accesible en: http://localhost:${PORT}`)
+        console.log(`🔗 API endpoints en: http://localhost:${PORT}/api`)
+        console.log(`💡 Para desarrollo frontend, usa: http://localhost:4200`)
+        console.log(`✅ CORS configurado para desarrollo local y producción`)
+      }
     })
   })
   .catch((error) => {
