@@ -2,8 +2,7 @@ const mongoose = require("mongoose")
 
 const itemVentaSchema = new mongoose.Schema({
   producto: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Producto",
+    type: mongoose.Schema.Types.Mixed, // Permite ObjectId o String para productos manuales
     required: true,
   },
   codigo: {

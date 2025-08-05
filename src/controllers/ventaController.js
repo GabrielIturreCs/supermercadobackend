@@ -71,13 +71,18 @@ exports.create = async (req, res) => {
     
     const venta = new Venta(ventaData);
     console.log('Venta instanciada:', venta);
-    // Baja automática de stock usando items
+    // Baja automática de stock usando items (solo para productos reales, no manuales)
     if (!venta.items || !Array.isArray(venta.items)) {
       console.log('Error: items no es array o no existe');
     }
     for (const item of (venta.items || [])) {
       console.log('Procesando item:', item);
-      await Producto.findByIdAndUpdate(item.producto, { $inc: { 'stock.actual': -item.cantidad } });
+      // Solo actualizar stock si NO es un producto manual
+      if (item.codigo !== 'MANUAL' && !item.producto.toString().startsWith('manual_')) {
+        await Producto.findByIdAndUpdate(item.producto, { $inc: { 'stock.actual': -item.cantidad } });
+      } else {
+        console.log('Producto manual detectado, saltando actualización de stock:', item.producto);
+      }
     }
     await venta.save();
     console.log('Venta guardada OK:', venta._id);
