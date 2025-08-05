@@ -402,12 +402,10 @@ router.post('/58mm-auto', async (req, res) => {
     console.log(`🎯 Método: ${metodoUsado}`);
     console.log(`🖨️  Impresión física: ${impresionFisica ? 'SÍ' : 'NO (simulada)'}`);
     
-    // FORZAR ENVÍO DE RESPUESTA
+    // ENVÍO DE RESPUESTA CORRECTO
     console.log('📤 ENVIANDO RESPUESTA JSON...');
-    res.status(200);
-    const response = res.json(successResponse);
     console.log('✅ RESPUESTA ENVIADA EXITOSAMENTE');
-    return response;
+    return res.status(200).json(successResponse);
     
   } catch (error) {
     console.error('❌ ERROR CRÍTICO EN ENDPOINT:', error.message);
@@ -424,10 +422,8 @@ router.post('/58mm-auto', async (req, res) => {
     };
     
     console.log('📤 ENVIANDO RESPUESTA DE ERROR...');
-    res.status(500);
-    const errorResponse = res.json(criticalErrorResponse);
     console.log('❌ RESPUESTA DE ERROR ENVIADA');
-    return errorResponse;
+    return res.status(500).json(criticalErrorResponse);
   }
 });
 
@@ -478,10 +474,8 @@ router.get('/status', (req, res) => {
   };
   
   console.log('📤 ENVIANDO RESPUESTA DE STATUS...');
-  res.status(200);
-  const response = res.json(statusResponse);
   console.log('✅ STATUS ENVIADO EXITOSAMENTE');
-  return response;
+  return res.status(200).json(statusResponse);
 });
 
 module.exports = router;
