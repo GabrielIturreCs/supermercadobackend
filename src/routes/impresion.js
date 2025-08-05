@@ -140,17 +140,14 @@ async function enviarConPowerShellDirecto(contenido) {
  * Generar ticket ULTRA COMPACTO con máximo aprovechamiento
  */
 function generarTicketUltraCompacto(venta, items) {
+  console.log('🎫 Generando ticket - Total:', venta.total, 'Items:', items.length);
+  
   let ticket = '';
   
-  // Comandos ESC/POS para máxima compactación
-  ticket += '\x1B\x40';           // ESC @ - Reset
-  ticket += '\x1B\x4D\x01';       // ESC M 1 - Font B (9x17) - MÁS PEQUEÑA
-  ticket += '\x1B\x0F';           // ESC SI - Condensado ON
-  ticket += '\x1B\x33\x00';       // ESC 3 0 - Espaciado línea mínimo
-  ticket += '\x1B\x20\x00';       // ESC SP 0 - Espaciado char mínimo  
-  ticket += '\x1D\x4C\x00\x00';   // GS L 0 0 - Margen izquierdo 0
+  // SIN comandos ESC/POS - ticket completamente limpio
+  // Solo texto plano para evitar símbolos extraños
   
-  // Contenido - Font B + Condensado = hasta 56 caracteres
+  // Contenido - aprovechando el ancho completo
   const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
   const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   const numero = venta.numero || Math.floor(Math.random() * 10000);
@@ -160,31 +157,24 @@ function generarTicketUltraCompacto(venta, items) {
   ticket += `${fecha} ${hora}                            #${numero}\n`;
   ticket += '========================================================\n';
   
-  // Items aprovechando TODO el ancho
+  // Items - formato ultra simple sin espaciado complejo
   items.forEach(item => {
-    const maxNombre = 50; // Con Font B condensado
-    const nombre = item.nombre.length > maxNombre ? 
-                   item.nombre.substring(0, maxNombre - 2) + '..' : 
+    const nombre = item.nombre.length > 40 ? 
+                   item.nombre.substring(0, 38) + '..' : 
                    item.nombre;
     
     const total = (item.precio * item.cantidad).toFixed(0);
     
-    // Línea del producto
+    // Producto en una línea
     ticket += `${nombre}\n`;
     
-    // Línea cantidad x precio = total (alineada)
-    const lineaCantidad = `${item.cantidad}x${item.precio.toFixed(0)}`;
-    const espaciosLibres = 56 - lineaCantidad.length - total.length - 1;
-    const espacios = ' '.repeat(Math.max(1, espaciosLibres));
-    
-    ticket += `${lineaCantidad}${espacios}$${total}\n`;
+    // Cantidad y precio en línea separada - simple
+    ticket += `${item.cantidad}x$${item.precio.toFixed(0)} = $${total}\n`;
   });
   
-  // Total
+  // Total - formato ultra simple
   ticket += '========================================================\n';
-  const totalStr = venta.total.toFixed(0);
-  const espaciosTotal = 56 - 6 - totalStr.length - 1;
-  ticket += `TOTAL:${' '.repeat(Math.max(1, espaciosTotal))}$${totalStr}\n`;
+  ticket += `TOTAL: $${venta.total.toFixed(0)}\n`;
   
   // Método de pago
   const metodoPago = (venta.metodoPago || 'EFECTIVO').toUpperCase();
@@ -193,10 +183,10 @@ function generarTicketUltraCompacto(venta, items) {
   // Pie ultra compacto
   ticket += '========================================================\n';
   ticket += '                       ¡GRACIAS!\n';
+  ticket += '                    Mercadito Dani\n';
   ticket += '\n\n';
   
-  // Corte automático
-  ticket += '\x1D\x56\x42\x00';   // GS V B 0 - Corte parcial
+  // SIN comando de corte para evitar símbolos extraños
   
   return ticket;
 }
