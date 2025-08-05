@@ -138,6 +138,7 @@ async function enviarConPowerShellDirecto(contenido) {
 
 /**
  * Generar ticket ULTRA COMPACTO con máximo aprovechamiento
+ * Letra ligeramente más grande pero conservando compacidad
  */
 function generarTicketUltraCompacto(venta, items) {
   console.log('🎫 Generando ticket - Total:', venta.total, 'Items:', items.length);
@@ -147,43 +148,43 @@ function generarTicketUltraCompacto(venta, items) {
   // SIN comandos ESC/POS - ticket completamente limpio
   // Solo texto plano para evitar símbolos extraños
   
-  // Contenido - aprovechando el ancho completo
+  // Contenido - aprovechando el ancho completo con letra ligeramente más grande
   const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
   const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   const numero = venta.numero || Math.floor(Math.random() * 10000);
   
-  // Encabezado ULTRA compacto
-  ticket += '                        SUPERMERCADO\n';
-  ticket += `${fecha} ${hora}                            #${numero}\n`;
-  ticket += '========================================================\n';
+  // Encabezado ULTRA compacto con espaciado mejorado
+  ticket += '                     SUPERMERCADO\n';
+  ticket += `${fecha} ${hora}                         #${numero}\n`;
+  ticket += '==================================================\n';
   
-  // Items - formato ultra simple sin espaciado complejo
+  // Items - formato ultra simple con mejor legibilidad
   items.forEach(item => {
-    const nombre = item.nombre.length > 40 ? 
-                   item.nombre.substring(0, 38) + '..' : 
+    const nombre = item.nombre.length > 35 ? 
+                   item.nombre.substring(0, 33) + '..' : 
                    item.nombre;
     
     const total = (item.precio * item.cantidad).toFixed(0);
     
-    // Producto en una línea
+    // Producto en una línea con mejor espaciado
     ticket += `${nombre}\n`;
     
-    // Cantidad y precio en línea separada - simple
-    ticket += `${item.cantidad}x$${item.precio.toFixed(0)} = $${total}\n`;
+    // Cantidad y precio en línea separada - más legible
+    ticket += `  ${item.cantidad} x $${item.precio.toFixed(0)} = $${total}\n`;
   });
   
-  // Total - formato ultra simple
-  ticket += '========================================================\n';
-  ticket += `TOTAL: $${venta.total.toFixed(0)}\n`;
+  // Total - formato con mejor visibilidad
+  ticket += '==================================================\n';
+  ticket += `              TOTAL: $${venta.total.toFixed(0)}\n`;
   
   // Método de pago
   const metodoPago = (venta.metodoPago || 'EFECTIVO').toUpperCase();
-  ticket += `${metodoPago}\n`;
+  ticket += `              ${metodoPago}\n`;
   
-  // Pie ultra compacto
-  ticket += '========================================================\n';
-  ticket += '                       ¡GRACIAS!\n';
-  ticket += '                    Mercadito Dani\n';
+  // Pie ultra compacto con mejor presentación
+  ticket += '==================================================\n';
+  ticket += '                    ¡GRACIAS!\n';
+  ticket += '                 Mercadito Dani\n';
   ticket += '\n\n';
   
   // SIN comando de corte para evitar símbolos extraños
@@ -205,7 +206,40 @@ router.post('/58mm-auto', async (req, res) => {
     console.log('📋 Total:', venta.total, '- Items:', items.length);
     console.log('🔤 Font B (9x17) + Condensado = 56 caracteres/línea');
     console.log('📏 Aprovecha TODO el ancho del papel (58mm)');
-    console.log('🚀 Enviando con PowerShell directo (SIN notepad)...');
+    
+    // Detectar plataforma
+    const isWindows = process.platform === 'win32';
+    const hostname = process.env.RENDER_SERVICE_NAME || os.hostname();
+    
+    console.log('🖥️  Plataforma:', process.platform);
+    console.log('🌐 Hostname:', hostname);
+    console.log('🔍 Es Windows:', isWindows);
+    
+    if (!isWindows) {
+      // En producción (Linux/Render) - no puede imprimir físicamente
+      console.log('⚠️  ENTORNO DE PRODUCCIÓN DETECTADO (Linux)');
+      console.log('� PowerShell y drivers XP-58 no disponibles');
+      console.log('✅ Ticket generado pero no se puede enviar a impresora');
+      
+      // Generar ticket para mostrar que funciona
+      const ticketCompacto = generarTicketUltraCompacto(venta, items);
+      
+      res.json({ 
+        success: true, 
+        message: 'Ticket generado correctamente (Producción - sin impresión física)',
+        method: 'Producción-Linux',
+        caracteresPorLinea: 56,
+        fontUsada: 'Font B (9x17) + Condensado',
+        servidor: 'Backend Integrado Puerto 3000',
+        entorno: 'Producción',
+        limitacion: 'Impresión física solo disponible en Windows local',
+        ticket: ticketCompacto.substring(0, 200) + '...' // Muestra solo parte del ticket
+      });
+      return;
+    }
+    
+    // En desarrollo (Windows) - impresión física
+    console.log('�🚀 Enviando con PowerShell directo (SIN notepad)...');
     
     // Generar ticket ultra compacto
     const ticketCompacto = generarTicketUltraCompacto(venta, items);
@@ -223,7 +257,8 @@ router.post('/58mm-auto', async (req, res) => {
       method: resultado.method,
       caracteresPorLinea: 56,
       fontUsada: 'Font B (9x17) + Condensado',
-      servidor: 'Backend Integrado Puerto 3000'
+      servidor: 'Backend Integrado Puerto 3000',
+      entorno: 'Desarrollo'
     });
     
   } catch (error) {
