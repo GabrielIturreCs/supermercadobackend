@@ -59,7 +59,17 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     console.log('POST /api/ventas - body:', JSON.stringify(req.body, null, 2));
-    const venta = new Venta(req.body);
+    
+    // Limpiar campos ObjectId que vienen como string vacío
+    const ventaData = { ...req.body };
+    if (ventaData.sucursal === '' || ventaData.sucursal === null) {
+      delete ventaData.sucursal;
+    }
+    if (ventaData.turno === '' || ventaData.turno === null) {
+      delete ventaData.turno;
+    }
+    
+    const venta = new Venta(ventaData);
     console.log('Venta instanciada:', venta);
     // Baja automática de stock usando items
     if (!venta.items || !Array.isArray(venta.items)) {
