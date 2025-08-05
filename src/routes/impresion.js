@@ -62,8 +62,8 @@ async function enviarConPowerShellDirecto(contenido) {
                 # Convertir bytes a string para ESC/POS
                 $content = [System.Text.Encoding]::GetEncoding("ISO-8859-1").GetString($bytes)
                 
-                # Usar Graphics para envío directo
-                $font = New-Object System.Drawing.Font("Courier New", 6)
+                # Usar Graphics para envío directo con letra más grande
+                $font = New-Object System.Drawing.Font("Courier New", 8)
                 $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::Black)
                 
                 # Calcular posición sin márgenes
@@ -153,39 +153,48 @@ function generarTicketUltraCompacto(venta, items) {
   const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   const numero = venta.numero || Math.floor(Math.random() * 10000);
   
-  // Encabezado ULTRA compacto con espaciado mejorado
-  ticket += '                     SUPERMERCADO\n';
-  ticket += `${fecha} ${hora}                         #${numero}\n`;
-  ticket += '==================================================\n';
+  // Encabezado con mejor espaciado y más visible
+  ticket += '\n';
+  ticket += '                   SUPERMERCADO\n';
+  ticket += '\n';
+  ticket += `${fecha} ${hora}                       #${numero}\n`;
+  ticket += '\n';
+  ticket += '===============================================\n';
   
-  // Items - formato ultra simple con mejor legibilidad
+  // Items - formato con mejor separación
   items.forEach(item => {
-    const nombre = item.nombre.length > 35 ? 
-                   item.nombre.substring(0, 33) + '..' : 
+    const nombre = item.nombre.length > 32 ? 
+                   item.nombre.substring(0, 30) + '..' : 
                    item.nombre;
     
     const total = (item.precio * item.cantidad).toFixed(0);
     
-    // Producto en una línea con mejor espaciado
-    ticket += `${nombre}\n`;
+    // Producto con espaciado mejorado
+    ticket += `\n${nombre}\n`;
     
-    // Cantidad y precio en línea separada - más legible
-    ticket += `  ${item.cantidad} x $${item.precio.toFixed(0)} = $${total}\n`;
+    // Cantidad y precio con mejor formato
+    ticket += `   ${item.cantidad} x $${item.precio.toFixed(0)} = $${total}\n`;
   });
   
-  // Total - formato con mejor visibilidad
-  ticket += '==================================================\n';
-  ticket += `              TOTAL: $${venta.total.toFixed(0)}\n`;
+  // Total con mejor presentación
+  ticket += '\n';
+  ticket += '===============================================\n';
+  ticket += '\n';
+  ticket += `             TOTAL: $${venta.total.toFixed(0)}\n`;
+  ticket += '\n';
   
   // Método de pago
   const metodoPago = (venta.metodoPago || 'EFECTIVO').toUpperCase();
-  ticket += `              ${metodoPago}\n`;
+  ticket += `             ${metodoPago}\n`;
   
-  // Pie ultra compacto con mejor presentación
-  ticket += '==================================================\n';
-  ticket += '                    ¡GRACIAS!\n';
-  ticket += '                 Mercadito Dani\n';
-  ticket += '\n\n';
+  // Pie con mejor espaciado
+  ticket += '\n';
+  ticket += '===============================================\n';
+  ticket += '\n';
+  ticket += '                  ¡GRACIAS!\n';
+  ticket += '\n';
+  ticket += '               Mercadito Dani\n';
+  ticket += '\n\n\n';
   
   // SIN comando de corte para evitar símbolos extraños
   
