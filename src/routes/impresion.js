@@ -276,9 +276,19 @@ function generarTicketUltraCompacto(venta, items) {
  * POST /api/impresion/58mm-auto
  */
 router.post('/58mm-auto', async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
+  // Headers EXPLÍCITOS para Render
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
+  console.log('🚀 ENDPOINT /58mm-auto INICIADO');
+  console.log('📋 Method:', req.method);
+  console.log('📋 Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('📋 Body presente:', !!req.body);
   
   try {
     const { venta, items } = req.body;
@@ -392,7 +402,12 @@ router.post('/58mm-auto', async (req, res) => {
     console.log(`🎯 Método: ${metodoUsado}`);
     console.log(`🖨️  Impresión física: ${impresionFisica ? 'SÍ' : 'NO (simulada)'}`);
     
-    return res.status(200).json(successResponse);
+    // FORZAR ENVÍO DE RESPUESTA
+    console.log('📤 ENVIANDO RESPUESTA JSON...');
+    res.status(200);
+    const response = res.json(successResponse);
+    console.log('✅ RESPUESTA ENVIADA EXITOSAMENTE');
+    return response;
     
   } catch (error) {
     console.error('❌ ERROR CRÍTICO EN ENDPOINT:', error.message);
@@ -408,7 +423,11 @@ router.post('/58mm-auto', async (req, res) => {
       hostname: process.env.RENDER_SERVICE_NAME || os.hostname()
     };
     
-    return res.status(500).json(criticalErrorResponse);
+    console.log('📤 ENVIANDO RESPUESTA DE ERROR...');
+    res.status(500);
+    const errorResponse = res.json(criticalErrorResponse);
+    console.log('❌ RESPUESTA DE ERROR ENVIADA');
+    return errorResponse;
   }
 });
 
@@ -417,10 +436,17 @@ router.post('/58mm-auto', async (req, res) => {
  * GET /api/impresion/status
  */
 router.get('/status', (req, res) => {
+  console.log('🔍 ENDPOINT /status INICIADO');
+  
+  // Headers explícitos
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-cache');
+  
   const isWindows = process.platform === 'win32';
   const isRender = !!(process.env.RENDER_SERVICE_NAME || process.env.RENDER);
   
-  res.json({
+  const statusResponse = {
     servicio: 'Impresión Multiplataforma',
     estado: 'Activo',
     puerto: process.env.PORT || 3000,
@@ -449,7 +475,13 @@ router.get('/status', (req, res) => {
       'GET /api/impresion/status - Estado del servicio'
     ],
     timestamp: new Date().toISOString()
-  });
+  };
+  
+  console.log('📤 ENVIANDO RESPUESTA DE STATUS...');
+  res.status(200);
+  const response = res.json(statusResponse);
+  console.log('✅ STATUS ENVIADO EXITOSAMENTE');
+  return response;
 });
 
 module.exports = router;

@@ -1,0 +1,14 @@
+{
+  "venta": {
+    "total": 1500,
+    "metodoPago": "EFECTIVO",
+    "numero": 1234
+  },
+  "items": [
+    {
+      "nombre": "Producto de prueba",
+      "precio": 1500,
+      "cantidad": 1
+    }
+  ]
+}
