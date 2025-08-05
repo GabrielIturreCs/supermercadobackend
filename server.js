@@ -28,6 +28,7 @@ const ingresosEgresosRoutes = require("./src/routes/ingresosEgresos")
 const sucursalesRoutes = require("./src/routes/sucursales")
 const balanzasRoutes = require("./src/routes/balanzas")
 const auditoriasRoutes = require("./src/routes/auditorias")
+const impresionRoutes = require("./src/routes/impresion")
 
 // Import middleware
 const errorHandler = require("./src/middleware/errorHandler")
@@ -114,6 +115,7 @@ app.use("/api/ingresos-egresos", ingresosEgresosRoutes)
 app.use("/api/sucursales", sucursalesRoutes)
 app.use("/api/balanzas", balanzasRoutes)
 app.use("/api/auditorias", auditoriasRoutes)
+app.use("/api/impresion", impresionRoutes)
 
 // Error handling middleware
 app.use(notFound)
