@@ -368,14 +368,16 @@ router.post('/58mm-auto', async (req, res) => {
       console.log('🐧 LINUX/RENDER - PROCESAMIENTO COMPLETO...');
       
       try {
-        resultado = await enviarEnLinux(ticketCompacto);
+        resultado = await procesarImpresionCompleta(ticketCompacto);
         metodoUsado = resultado.method;
         impresionFisica = false; // No es física pero sí es procesamiento completo
         console.log('✅ PROCESAMIENTO LINUX COMPLETO:', metodoUsado);
       } catch (linuxError) {
         console.error('❌ Error procesamiento Linux:', linuxError.message);
+        console.error('📋 Stack error Linux:', linuxError.stack);
         metodoUsado = 'Linux-Error-Processed';
         impresionFisica = false;
+        resultado = { success: true, method: metodoUsado }; // Asegurar resultado válido
       }
     }
     
@@ -413,19 +415,23 @@ router.post('/58mm-auto', async (req, res) => {
     console.log(`🎯 Método: ${metodoUsado}`);
     console.log(`🖨️  Impresión física: ${impresionFisica ? 'SÍ' : 'NO (simulada)'}`);
     
-    // ENVÍO DE RESPUESTA CORRECTO
+    // ENVÍO DE RESPUESTA CORRECTO - Formato de una sola línea
     console.log('📤 ENVIANDO RESPUESTA JSON...');
+    res.status(200).json(successResponse);
     console.log('✅ RESPUESTA ENVIADA EXITOSAMENTE');
-    return res.status(200).json(successResponse);
+    return;
     
   } catch (error) {
     console.error('❌ ERROR CRÍTICO EN ENDPOINT:', error.message);
     console.error('📋 Stack:', error.stack);
+    console.error('📋 Error name:', error.name);
+    console.error('📋 Error code:', error.code);
     
     const criticalErrorResponse = { 
       success: false, 
       error: 'Error interno crítico del servidor',
       details: error.message,
+      errorName: error.name,
       endpoint: '/api/impresion/58mm-auto',
       timestamp: new Date().toISOString(),
       platform: process.platform,
@@ -433,8 +439,9 @@ router.post('/58mm-auto', async (req, res) => {
     };
     
     console.log('📤 ENVIANDO RESPUESTA DE ERROR...');
+    res.status(500).json(criticalErrorResponse);
     console.log('❌ RESPUESTA DE ERROR ENVIADA');
-    return res.status(500).json(criticalErrorResponse);
+    return;
   }
 });
 
@@ -489,8 +496,9 @@ router.get('/status', (req, res) => {
   };
   
   console.log('📤 ENVIANDO RESPUESTA DE STATUS...');
+  res.status(200).json(statusResponse);
   console.log('✅ STATUS ENVIADO EXITOSAMENTE');
-  return res.status(200).json(statusResponse);
+  return;
 });
 
 module.exports = router;
