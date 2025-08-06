@@ -28,7 +28,7 @@ const ingresosEgresosRoutes = require("./src/routes/ingresosEgresos")
 const sucursalesRoutes = require("./src/routes/sucursales")
 const balanzasRoutes = require("./src/routes/balanzas")
 const auditoriasRoutes = require("./src/routes/auditorias")
-const impresionRoutes = require("./src/routes/impresion")
+const impresionRoutes = require("./src/routes/impresion_multiplataforma")
 
 // Import middleware
 const errorHandler = require("./src/middleware/errorHandler")

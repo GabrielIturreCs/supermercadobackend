@@ -64,8 +64,8 @@ async function enviarConPowerShellDirecto(contenido) {
                 # Convertir bytes a string para ESC/POS
                 $content = [System.Text.Encoding]::GetEncoding("ISO-8859-1").GetString($bytes)
                 
-                # Usar Graphics para envío directo con letra más grande
-                $font = New-Object System.Drawing.Font("Courier New", 8)
+                # Usar Graphics para envío directo con letra más grande y negrita
+                $font = New-Object System.Drawing.Font("Courier New", 9, [System.Drawing.FontStyle]::Bold)
                 $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::Black)
                 
                 # Calcular posición sin márgenes
@@ -288,9 +288,9 @@ function generarTicketUltraCompacto(venta, items) {
   const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   const numero = venta.numero || Math.floor(Math.random() * 10000);
   
-  // Encabezado con mejor espaciado y más visible
+  // Encabezado alineado a la izquierda (normal)
   ticket += '\n';
-  ticket += '                   SUPERMERCADO\n';
+  ticket += 'SUPERMERCADO\n';
   ticket += '\n';
   ticket += `${fecha} ${hora}                       #${numero}\n`;
   ticket += '\n';
@@ -311,24 +311,24 @@ function generarTicketUltraCompacto(venta, items) {
     ticket += `   ${item.cantidad} x $${item.precio.toFixed(0)} = $${total}\n`;
   });
   
-  // Total con mejor presentación
+  // Total alineado a la izquierda (normal)
   ticket += '\n';
   ticket += '===============================================\n';
   ticket += '\n';
-  ticket += `             TOTAL: $${venta.total.toFixed(0)}\n`;
+  ticket += `TOTAL: $${venta.total.toFixed(0)}\n`;
   ticket += '\n';
   
   // Método de pago
   const metodoPago = (venta.metodoPago || 'EFECTIVO').toUpperCase();
-  ticket += `             ${metodoPago}\n`;
+  ticket += `${metodoPago}\n`;
   
-  // Pie con centrado correcto (mismo que encabezado)
+  // Pie alineado a la izquierda (normal)
   ticket += '\n';
   ticket += '===============================================\n';
   ticket += '\n';
-  ticket += '                 ¡GRACIAS!\n';
+  ticket += '¡GRACIAS!\n';
   ticket += '\n';
-  ticket += '              Mercadito Dani\n';
+  ticket += 'Mercadito Dani\n';
   ticket += '\n\n\n';
   
   // SIN comando de corte para evitar símbolos extraños
@@ -374,8 +374,8 @@ router.post('/58mm-auto', async (req, res) => {
     }
     
     console.log('📋 Total:', venta.total, '- Items:', items.length);
-    console.log('🔤 Courier New 8pt - Letra más grande y legible');
-    console.log('📏 Centrado perfecto para 58mm');
+    console.log('🔤 Courier New 9pt BOLD - Letra más negra y un poquito más grande');
+    console.log('📏 Alineación izquierda normal para 58mm');
     
     // Detectar plataforma y entorno
     const isWindows = process.platform === 'win32';
@@ -408,7 +408,7 @@ router.post('/58mm-auto', async (req, res) => {
           message: '✅ Ticket impreso correctamente en Render Linux',
           method: resultado.method,
           caracteresPorLinea: 47,
-          fontUsada: 'Courier New 8pt (Letra más grande)',
+          fontUsada: 'Courier New 9pt BOLD (Letra más negra y grande)',
           servidor: 'Backend Render Linux',
           entorno: 'Producción',
           plataforma: process.platform,
@@ -446,7 +446,7 @@ router.post('/58mm-auto', async (req, res) => {
           message: 'Ticket procesado en Render, error en impresión',
           method: 'Render-Linux-ProcessedOnly',
           caracteresPorLinea: 47,
-          fontUsada: 'Courier New 8pt (Letra más grande)',
+          fontUsada: 'Courier New 9pt BOLD (Letra más negra y grande)',
           servidor: 'Backend Render Linux',
           entorno: 'Producción',
           plataforma: process.platform,
@@ -489,7 +489,7 @@ router.post('/58mm-auto', async (req, res) => {
         message: `✅ Ticket impreso correctamente - ${resultado.method}`,
         method: resultado.method,
         caracteresPorLinea: 47,
-        fontUsada: 'Courier New 8pt (Letra más grande)',
+        fontUsada: 'Courier New 9pt BOLD (Letra más negra y grande)',
         servidor: 'Backend Local Windows',
         entorno: 'Desarrollo',
         plataforma: process.platform,
@@ -515,7 +515,7 @@ router.post('/58mm-auto', async (req, res) => {
         message: 'Ticket procesado correctamente, error en impresión física',
         method: 'Windows-Processed-PrintError',
         caracteresPorLinea: 47,
-        fontUsada: 'Courier New 8pt (Letra más grande)',
+        fontUsada: 'Courier New 9pt BOLD (Letra más negra y grande)',
         servidor: 'Backend Local Windows',
         entorno: 'Desarrollo',
         plataforma: process.platform,
@@ -598,8 +598,8 @@ router.get('/status', (req, res) => {
       'Métodos específicos por plataforma',
       'Fallback a simulación si falla',
       'Respuestas JSON válidas siempre',
-      'Courier New 8pt - Letra más grande y legible',
-      'Centrado perfecto para papel 58mm',
+      'Courier New 9pt BOLD - Letra más negra y un poquito más grande',
+      'Alineación izquierda normal para papel 58mm',
       'Headers JSON explícitos para Render',
       'Validación robusta de datos'
     ],
