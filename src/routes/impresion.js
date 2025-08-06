@@ -651,30 +651,9 @@ router.get('/ticket/:id', (req, res) => {
     }
     
     if (!ticketContent) {
-      // Si no existe el archivo, generar un ticket de ejemplo
-      ticketContent = `
-                   SUPERMERCADO
-
-06/08 12:34                       #${ticketId}
-
-===============================================
-
-Producto de Ejemplo
-   1 x $100 = $100
-
-===============================================
-
-             TOTAL: $100
-
-             EFECTIVO
-
-===============================================
-
-                 GRACIAS!
-
-              Mercadito Dani
-
-`;
+      // Si no existe el ticket, devolver 404 en lugar de un ticket falso
+      console.log(`Ticket ${ticketId} no encontrado, devolviendo 404`);
+      return res.status(404).send('<h1>Ticket no encontrado</h1>');
     }
     
     const html = generateTicketHTML(ticketId, ticketContent);
