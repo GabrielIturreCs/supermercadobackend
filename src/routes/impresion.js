@@ -559,6 +559,48 @@ router.post('/58mm-auto', async (req, res) => {
 });
 
 /**
+ * ENDPOINT PARA MONITOR - ULTIMO TICKET DISPONIBLE
+ */
+router.get('/ultimo-ticket', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  try {
+    const ticketsDir = path.join(os.tmpdir(), 'tickets_procesados');
+    
+    if (!fs.existsSync(ticketsDir)) {
+      return res.status(200).json({ ticketId: null, mensaje: 'Sin tickets disponibles' });
+    }
+    
+    // Buscar el ticket más reciente
+    const archivos = fs.readdirSync(ticketsDir)
+      .filter(f => f.startsWith('ticket_plain_') && f.endsWith('.txt'))
+      .map(f => {
+        const rutaCompleta = path.join(ticketsDir, f);
+        const stats = fs.statSync(rutaCompleta);
+        const ticketId = f.replace('ticket_plain_', '').replace('.txt', '').replace(/[-T:.]/g, '').substring(0, 12);
+        return { archivo: f, ticketId, modificado: stats.mtime };
+      })
+      .sort((a, b) => b.modificado - a.modificado);
+    
+    if (archivos.length > 0) {
+      const ultimoTicket = archivos[0];
+      res.status(200).json({
+        ticketId: ultimoTicket.ticketId,
+        timestamp: ultimoTicket.modificado.toISOString(),
+        disponible: true
+      });
+    } else {
+      res.status(200).json({ ticketId: null, mensaje: 'Sin tickets procesados' });
+    }
+    
+  } catch (error) {
+    console.error('Error obteniendo último ticket:', error.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+/**
  * ENDPOINT DE ESTADO
  */
 router.get('/status', (req, res) => {
@@ -570,6 +612,7 @@ router.get('/status', (req, res) => {
     estado: 'Activo',
     endpoints: [
       'POST /api/impresion/58mm-auto - Impresion automatica',
+      'GET /api/impresion/ultimo-ticket - Ultimo ticket para monitor',
       'GET /api/impresion/status - Estado del servicio',
       'GET /api/impresion/ticket/:id - Pagina de ticket para chrome kiosk'
     ],

@@ -1,6 +1,18 @@
 const Venta = require('../models/Venta');
 const Producto = require('../models/Producto');
 
+// Importar fetch para llamadas HTTP internas
+let fetch;
+try {
+  fetch = globalThis.fetch;
+  if (!fetch) {
+    fetch = require('node-fetch');
+  }
+} catch (e) {
+  console.log('Fetch no disponible, impresión automática deshabilitada');
+  fetch = null;
+}
+
 exports.getAll = async (req, res) => {
   try {
     const ventas = await Venta.find().populate('vendedor items.producto turno');
@@ -86,6 +98,49 @@ exports.create = async (req, res) => {
     }
     await venta.save();
     console.log('Venta guardada OK:', venta._id);
+    
+    // ===== IMPRESIÓN AUTOMÁTICA PARA MONITOR LOCAL =====
+    try {
+      console.log('🖨️ Iniciando impresión automática para venta:', venta._id);
+      
+      // Generar timestamp para el ticket
+      const timestamp = new Date().toISOString().replace(/[-T:\.Z]/g, '').slice(0, 12);
+      
+      // Llamar al endpoint de impresión 58mm
+      const impresionData = {
+        venta: {
+          _id: venta._id,
+          total: venta.total,
+          metodoPago: venta.metodoPago || 'efectivo'
+        },
+        items: venta.items.map(item => ({
+          nombre: item.nombre || 'Producto',
+          precio: item.precio,
+          cantidad: item.cantidad
+        }))
+      };
+      
+      console.log('📊 Datos para impresión:', impresionData);
+      
+      // Hacer llamada interna al endpoint de impresión
+      const baseUrl = process.env.NODE_ENV === 'production' ? 
+        'https://supermercadobackend.onrender.com' : 
+        'http://localhost:3001';
+      
+      const impresionResponse = await fetch(`${baseUrl}/api/impresion/58mm-auto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(impresionData)
+      });
+      
+      const impresionResult = await impresionResponse.json();
+      console.log('✅ Respuesta de impresión:', impresionResult);
+      
+    } catch (impresionError) {
+      console.log('❌ Error en impresión automática:', impresionError.message);
+      // No falla la venta si la impresión falla
+    }
+    
     res.status(201).json(venta);
   } catch (err) {
     console.log('Error al crear venta:', err.message, err);
