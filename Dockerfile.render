@@ -1,0 +1,33 @@
+# DOCKERFILE PARA RENDER CON CHROME KIOSK PRINTING
+FROM node:18-slim
+
+# Instalar dependencias del sistema y Chrome
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg2 \
+    software-properties-common \
+    xvfb \
+    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configurar directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos del proyecto
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+# Exponer puerto
+EXPOSE 3001
+
+# Variables de entorno para Chrome
+ENV DISPLAY=:99
+ENV CHROME_BIN=/usr/bin/google-chrome-stable
+
+# Comando de inicio (con Xvfb para headless)
+CMD ["sh", "-c", "Xvfb :99 -screen 0 1024x768x24 -nolisten tcp & npm start"]
