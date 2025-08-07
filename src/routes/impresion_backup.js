@@ -353,9 +353,10 @@ function generarTicketUltraCompacto(venta, items) {
   
   // Encabezado
   ticket += '\n';
-  ticket += '        Verduleria y Despensa  Jona\n';
+  ticket += '        Verduleria y Despensa\n';
+  ticket += '              Jona\n';
   ticket += '\n';
-  ticket += `${fecha} ${hora}                       #${numero}\n`;
+  ticket += `${fecha} ${hora}             #${numero}\n`;
   ticket += '\n';
   ticket += '===============================================\n';
   
