@@ -15,7 +15,81 @@ try {
 
 exports.getAll = async (req, res) => {
   try {
-    const ventas = await Venta.find().populate('vendedor items.producto turno');
+    // Filtros de consulta desde query params
+    const { periodo, desde, hasta, vendedor, metodoPago, estado, limite } = req.query;
+    
+    // Construir filtro de fecha
+    let filtroFecha = {};
+    const hoy = new Date();
+    
+    if (periodo) {
+      switch (periodo) {
+        case 'hoy':
+          const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 0, 0, 0);
+          const finHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59);
+          filtroFecha.createdAt = { $gte: inicioHoy, $lte: finHoy };
+          break;
+        case 'mes':
+          const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1, 0, 0, 0);
+          const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59);
+          filtroFecha.createdAt = { $gte: inicioMes, $lte: finMes };
+          break;
+        case 'anio':
+          const inicioAnio = new Date(hoy.getFullYear(), 0, 1, 0, 0, 0);
+          const finAnio = new Date(hoy.getFullYear(), 11, 31, 23, 59, 59);
+          filtroFecha.createdAt = { $gte: inicioAnio, $lte: finAnio };
+          break;
+        case 'semana':
+          const inicioSemana = new Date(hoy);
+          inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+          inicioSemana.setHours(0, 0, 0, 0);
+          const finSemana = new Date(inicioSemana);
+          finSemana.setDate(inicioSemana.getDate() + 6);
+          finSemana.setHours(23, 59, 59, 999);
+          filtroFecha.createdAt = { $gte: inicioSemana, $lte: finSemana };
+          break;
+      }
+    } else if (desde || hasta) {
+      if (desde && hasta) {
+        const fechaDesde = new Date(desde);
+        const fechaHasta = new Date(hasta);
+        fechaHasta.setHours(23, 59, 59, 999); // Incluir todo el día final
+        filtroFecha.createdAt = { $gte: fechaDesde, $lte: fechaHasta };
+      } else if (desde) {
+        filtroFecha.createdAt = { $gte: new Date(desde) };
+      } else if (hasta) {
+        const fechaHasta = new Date(hasta);
+        fechaHasta.setHours(23, 59, 59, 999);
+        filtroFecha.createdAt = { $lte: fechaHasta };
+      }
+    }
+    
+    // Construir filtro completo
+    let filtro = { ...filtroFecha };
+    
+    if (vendedor) {
+      filtro.vendedor = vendedor;
+    }
+    
+    if (metodoPago) {
+      filtro.metodoPago = metodoPago;
+    }
+    
+    if (estado) {
+      filtro.estado = estado;
+    }
+    
+    console.log('🔍 Filtros aplicados en backend:', filtro);
+    
+    // Construir query con límite opcional
+    let query = Venta.find(filtro).populate('vendedor items.producto turno');
+    
+    if (limite && !isNaN(parseInt(limite))) {
+      query = query.limit(parseInt(limite));
+    }
+    
+    const ventas = await query.sort({ createdAt: -1 }); // Ordenar por fecha descendente
+    
     // Agregar campo 'fecha' igual a 'createdAt' para compatibilidad con frontend
     let ventasConFecha = ventas.map(v => {
       const obj = v.toObject();
@@ -27,33 +101,46 @@ exports.getAll = async (req, res) => {
       return obj;
     });
 
-    // UX: ordenar ventas por fecha descendente (más reciente primero)
-    ventasConFecha = ventasConFecha.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    // Calcular totales para el día, mes y año actual (independiente de filtros)
+    const inicioHoyCalculo = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 0, 0, 0);
+    const ventasHoy = await Venta.find({ 
+      createdAt: { $gte: inicioHoyCalculo },
+      estado: { $ne: 'cancelada' }
+    });
+    const totalDia = ventasHoy.reduce((sum, v) => sum + (v.total || 0), 0);
 
-    // Calcular totales
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    const totalDia = ventasConFecha
-      .filter(v => new Date(v.fecha) >= hoy)
-      .reduce((sum, v) => sum + (v.total || 0), 0);
+    const inicioMesCalculo = new Date(hoy.getFullYear(), hoy.getMonth(), 1, 0, 0, 0);
+    const ventasMes = await Venta.find({ 
+      createdAt: { $gte: inicioMesCalculo },
+      estado: { $ne: 'cancelada' }
+    });
+    const totalMes = ventasMes.reduce((sum, v) => sum + (v.total || 0), 0);
 
-    const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    const totalMes = ventasConFecha
-      .filter(v => new Date(v.fecha) >= primerDiaMes)
-      .reduce((sum, v) => sum + (v.total || 0), 0);
-
-    const primerDiaAnio = new Date(hoy.getFullYear(), 0, 1);
-    const totalAnio = ventasConFecha
-      .filter(v => new Date(v.fecha) >= primerDiaAnio)
+    const inicioAnioCalculo = new Date(hoy.getFullYear(), 0, 1, 0, 0, 0);
+    const ventasAnio = await Venta.find({ 
+      createdAt: { $gte: inicioAnioCalculo },
+      estado: { $ne: 'cancelada' }
+    });
+    const totalAnio = ventasAnio.reduce((sum, v) => sum + (v.total || 0), 0);
+    
+    // Total del período filtrado
+    const totalPeriodo = ventasConFecha
+      .filter(v => v.estado !== 'cancelada')
       .reduce((sum, v) => sum + (v.total || 0), 0);
 
     res.json({
       ventas: ventasConFecha,
       totalDia,
       totalMes,
-      totalAnio
+      totalAnio,
+      totalPeriodo,
+      filtros: {
+        aplicados: filtro,
+        total: ventasConFecha.length
+      }
     });
   } catch (err) {
+    console.error('Error en getAll ventas:', err);
     res.status(500).json({ error: err.message });
   }
 };

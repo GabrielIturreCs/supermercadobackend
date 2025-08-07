@@ -51,7 +51,7 @@ router.post('/58mm-auto', (req, res) => {
         let ticket = '';
         
         ticket += '================================\n';
-        ticket += '         SUPERMERCADO\n';
+        ticket += '   Verduleria y Despensa  Jona\n';
         ticket += '================================\n';
         ticket += `Fecha: ${new Date().toLocaleString()}\n`;
         ticket += '--------------------------------\n';

@@ -155,7 +155,7 @@ function generarTicketUltraCompacto(venta, items) {
   
   // Encabezado con mejor espaciado y más visible
   ticket += '\n';
-  ticket += '                   SUPERMERCADO\n';
+  ticket += '           Verduleria y Despensa  Jona\n';
   ticket += '\n';
   ticket += `${fecha} ${hora}                       #${numero}\n`;
   ticket += '\n';
@@ -193,7 +193,7 @@ function generarTicketUltraCompacto(venta, items) {
   ticket += '\n';
   ticket += '                 ¡GRACIAS!\n';
   ticket += '\n';
-  ticket += '              Mercadito Dani\n';
+  ticket += '          Espero que vuelva Pronto :)\n';
   ticket += '\n\n\n';
   
   // SIN comando de corte para evitar símbolos extraños
