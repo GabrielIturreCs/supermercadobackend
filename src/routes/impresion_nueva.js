@@ -72,7 +72,7 @@ router.post('/58mm-auto', (req, res) => {
         ticket += `TOTAL: $${venta.total || 0}\n`;
         ticket += `Pago: ${venta.metodoPago || 'efectivo'}\n`;
         ticket += '================================\n';
-        ticket += '    GRACIAS POR SU COMPRA!\n';
+        ticket += ' Espero que vuelva Pronto :)\n';
         ticket += '================================\n\n\n';
         
         // Guardar en archivo temporal
